@@ -1,6 +1,6 @@
 # Deploy Gfarm file system with Capistrano
 
-* Task definition: [gfarm_task.rb](https://github.com/masa16/capistrano-gfarm/blob/master/config/deploy/gfarm_task.rb)
+* Task definition: [gfarm_task.rake](https://github.com/masa16/capistrano-gfarm/blob/master/lib/capistrano/tasks/gfarm_task.rake)
 * Example settings: [ipmu.rb](https://github.com/masa16/capistrano-gfarm/blob/master/config/deploy/ipmu.rb)
   * Configure a private Gfarm filesystem by a non privileged user.
   * Backend DB: PostgreSQL
