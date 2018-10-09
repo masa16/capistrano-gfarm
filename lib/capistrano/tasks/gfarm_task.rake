@@ -1,79 +1,30 @@
-require 'net/http'
+require_relative "gfarm_util"
 
-def http_download(uri_str, file_name, limit:10)
-  raise ArgumentError, 'HTTP redirect too deep' if limit == 0
-  info "connecting #{uri_str}"
-  response = Net::HTTP.get_response(URI.parse(uri_str))
-  case response
-  when Net::HTTPSuccess
-    info "saving to #{file_name}"
-    open(file_name, "wb") do |file|
-      file.write(response.body)
+
+task :download do
+  gfarm_tarball = "gfarm-#{fetch(:gfarm_version)}.tar.gz"
+  gfarm2fs_tarball = "gfarm2fs-#{fetch(:gfarm2fs_version)}.tar.gz"
+
+  file gfarm_tarball do |task|
+    run_locally do
+      url = ["https://sourceforge.net/projects/gfarm/files/gfarm_v2",
+             fetch(:gfarm_version),task.name,"download"].join("/")
+      http_download(url,task.name)
     end
-    response
-  when Net::HTTPRedirection
-    http_download(response['location'], file_name, limit:limit-1)
-  else
-    response.value
   end
-end
 
-def parse_option(opt_key,sep=' ')
-  fetch(opt_key).map do |k,v|
-    k = k.to_s
-    if k.size == 1
-      m = "-"
-    elsif k.size > 1
-      m = "--"
-    else
-      raise ArgumentError,"Invalid option"
+  file gfarm2fs_tarball do |task|
+    run_locally do
+      url = ["https://sourceforge.net/projects/gfarm/files/gfarm2fs",
+             fetch(:gfarm2fs_version),task.name,"download"].join("/")
+      http_download(url,task.name)
     end
-    case v
-    when NilClass
-      nil
-    when FalseClass
-      [m,k,sep,"no"].join
-    when TrueClass
-      [m,k].join
-    else
-      [m,k,sep,v].join
-    end
-  end.compact
-end
-
-def remote_env(str)
-  capture(:echo,"\"#{str}\"")
-end
-
-def print_process(role)
-  output = {}
-  on roles(role), in: :parallel do |host|
-    output[host] = "[#{host.hostname}]\n#{capture(:ps,"-x")}"
   end
-  roles(role).each{|host| puts output[host]}
+
+  invoke gfarm_tarball
+  invoke gfarm2fs_tarball
 end
 
-
-set :gfarm_tarball, "gfarm-#{fetch(:gfarm_version)}.tar.gz"
-set :gfarm2fs_tarball, "gfarm2fs-#{fetch(:gfarm2fs_version)}.tar.gz"
-
-file fetch(:gfarm_tarball) do |task|
-  run_locally do
-    url = ["https://sourceforge.net/projects/gfarm/files/gfarm_v2",
-           fetch(:gfarm_version),task.name,"download"].join("/")
-    http_download(url,task.name)
-  end
-end
-
-file fetch(:gfarm2fs_tarball) do |task|
-  run_locally do
-    url = ["https://sourceforge.net/projects/gfarm/files/gfarm2fs",
-           fetch(:gfarm_version),task.name,"download"].join("/")
-    http_download(url,task.name)
-  end
-end
-
-task download:[fetch(:gfarm_tarball),fetch(:gfarm2fs_tarball)]
 
 task :build => :download do
   on roles(:build) do |host|
@@ -198,7 +149,7 @@ namespace :stop do
     print_process(:gfmd)
   end
   task :gfsd do
-    on roles(:gfsd), in: :parallel, limit:8 do |host|
+    on roles(:gfsd), in: :parallel, limit:32 do |host|
       execute File.join(fetch(:gfsd_path),'etc','init.d','gfsd'),:stop
     end
     print_process(:gfsd)
@@ -220,7 +171,7 @@ namespace :start do
     print_process(:gfmd)
   end
   task :gfsd do
-    on roles(:gfsd), in: :parallel, limit:8 do |host|
+    on roles(:gfsd), in: :parallel, limit:32 do |host|
       execute File.join(fetch(:gfsd_path),'etc','init.d','gfsd'),:start
     end
     print_process(:gfsd)

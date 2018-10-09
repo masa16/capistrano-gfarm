@@ -212,5 +212,3 @@ set :config_gfsd_options,
   S:true,  # Enable the private mode.
   N:nil,   # Do not start gfsd.
 }
-
-require_relative 'gfarm_task'
