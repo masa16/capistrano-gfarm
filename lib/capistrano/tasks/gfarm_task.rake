@@ -36,10 +36,10 @@ task :build => :download do
     gfarm2fs_tarball = "gfarm2fs-#{fetch(:gfarm2fs_version)}.tar.gz"
 
     info up_path = remote_env(File.join(path,gfarm_tarball))
-    upload!(gfarm2fs_tarball, up_path)
+    upload!(gfarm_tarball, up_path)
 
     info up_path = remote_env(File.join(path,gfarm2fs_tarball))
-    upload!(gfarm_tarball, up_path)
+    upload!(gfarm2fs_tarball, up_path)
 
     within path do
       execute :rm,"-rf","gfarm-#{fetch(:gfarm_version)}"
