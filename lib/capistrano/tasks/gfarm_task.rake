@@ -27,25 +27,25 @@ end
 
 
 task :build => :download do
+
   on roles(:build) do |host|
     path = fetch(:build_path)
     execute :mkdir,"-p",path
 
-    file = fetch(:gfarm_tarball)
-    up_path = remote_env("#{path}/#{file}")
-    info up_path
-    upload!(file, up_path)
+    gfarm_tarball = "gfarm-#{fetch(:gfarm_version)}.tar.gz"
+    gfarm2fs_tarball = "gfarm2fs-#{fetch(:gfarm2fs_version)}.tar.gz"
 
-    file = fetch(:gfarm2fs_tarball)
-    up_path = remote_env("#{path}/#{file}")
-    info up_path
-    upload!(file, up_path)
+    info up_path = remote_env(File.join(path,gfarm_tarball))
+    upload!(gfarm2fs_tarball, up_path)
+
+    info up_path = remote_env(File.join(path,gfarm2fs_tarball))
+    upload!(gfarm_tarball, up_path)
 
     within path do
       execute :rm,"-rf","gfarm-#{fetch(:gfarm_version)}"
-      execute :tar,:xf,fetch(:gfarm_tarball)
+      execute :tar,:xf,gfarm_tarball
       execute :rm,"-rf","gfarm2fs-#{fetch(:gfarm2fs_version)}"
-      execute :tar,:xf,fetch(:gfarm2fs_tarball)
+      execute :tar,:xf,gfarm2fs_tarball
     end
 
     within "#{path}/gfarm-#{fetch(:gfarm_version)}" do
