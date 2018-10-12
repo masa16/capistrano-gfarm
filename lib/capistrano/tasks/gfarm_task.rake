@@ -113,7 +113,7 @@ namespace :setup do
         execute File.join(etc,'init.d','gfmd'),:restart
       end
     end
-    print_process(:gfmd)
+    print_process(:gfmd,"gfmd")
   end
 
   task :gfsd do
@@ -130,7 +130,7 @@ namespace :setup do
         "-h",host.hostname,
         fetch(:gfsd_spool_path)
     end
-    print_process(:gfsd)
+    print_process(:gfsd,"gfsd")
   end
 end
 
@@ -146,13 +146,13 @@ namespace :stop do
       execute File.join(fetch(:gfmd_path),'etc','init.d','gfmd'),:stop
       execute File.join(fetch(:gfmd_path),'etc','init.d','gfarm-pgsql'),:stop
     end
-    print_process(:gfmd)
+    print_process(:gfmd,"gfmd")
   end
   task :gfsd do
     on roles(:gfsd), in: :parallel, limit:32 do |host|
       execute File.join(fetch(:gfsd_path),'etc','init.d','gfsd'),:stop
     end
-    print_process(:gfsd)
+    print_process(:gfsd,"gfsd")
   end
 end
 
@@ -168,17 +168,34 @@ namespace :start do
       execute File.join(fetch(:gfmd_path),'etc','init.d','gfarm-pgsql'),:start
       execute File.join(fetch(:gfmd_path),'etc','init.d','gfmd'),:start
     end
-    print_process(:gfmd)
+    print_process(:gfmd,"gfmd")
   end
   task :gfsd do
-    on roles(:gfsd), in: :parallel, limit:32 do |host|
+    on roles(:gfsd), in: :parallel, limit:16 do |host|
       execute File.join(fetch(:gfsd_path),'etc','init.d','gfsd'),:start
     end
-    print_process(:gfsd)
+    print_process(:gfsd,"gfsd")
   end
 end
 
 task :start do
   invoke "start:gfmd"
   invoke "start:gfsd"
+end
+
+
+task :mount do
+  on roles(:client), in: :parallel, limit:8 do |host|
+    execute :mkdir,"-p",fetch(:mount_point)
+    execute :gfarm2fs,fetch(:mount_point)
+  end
+  print_process(:client,"gfarm2fs")
+end
+
+task :umount do
+  on roles(:client), in: :parallel, limit:8 do |host|
+    execute :fusermount,"-u",fetch(:mount_point)
+    execute :rmdir,fetch(:mount_point)
+  end
+  print_process(:client,"gfarm2fs")
 end

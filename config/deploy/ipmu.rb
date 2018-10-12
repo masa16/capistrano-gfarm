@@ -10,11 +10,13 @@ set :install_path, "/home/tanakatkb/local/gfarm/#{fetch(:gfarm_suffix)}"
 role :build, fetch(:build_host)
 role :gfmd, fetch(:gfmd_host)
 role :gfsd, (1..60).map{|i| "ansys%02d-ib" % i}
+role :client, ["fe"]+(1..60).map{|i| "ansys%02d-ib" % i}
 
 set :gfmd_path, "/datassd/tanakatkb/gfarm/"+fetch(:gfarm_suffix)
 set :gfmd_db_path, "/datassd/tanakatkb/gfarm/"+fetch(:gfarm_suffix)+"/db"
 set :gfsd_path, "/gfarm/tanakatkb/gfarm/"+fetch(:gfarm_suffix)
 set :gfsd_spool_path, "/gfarm/tanakatkb/gfarm/"+fetch(:gfarm_suffix)+"/spool"
+set :mount_point, "/tmp/tanakatkb"
 
 set :pgsql_port, 20601
 set :gfmd_port, 20602

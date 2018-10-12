@@ -45,10 +45,11 @@ def remote_env(str)
   capture(:echo,"\"#{str}\"")
 end
 
-def print_process(role)
+def print_process(role,cmd)
   output = {}
   on roles(role), in: :parallel do |host|
-    output[host] = "[#{host.hostname}]\n#{capture(:ps,"-x")}"
+    result = capture("ps u -C '#{cmd}' | egrep \"^$USER|$UID|USER\"")
+    output[host] = "[#{host.hostname}]\n#{result}"
   end
   roles(role).each{|host| puts output[host]}
 end
