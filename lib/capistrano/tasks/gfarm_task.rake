@@ -141,10 +141,15 @@ end
 
 
 namespace :stop do
+  task :postgres do
+    on roles(:gfmd) do |host|
+      execute File.join(fetch(:gfmd_path),'etc','init.d','gfarm-pgsql'),:stop
+    end
+    print_process(:gfmd,"postgres")
+  end
   task :gfmd do
     on roles(:gfmd) do |host|
       execute File.join(fetch(:gfmd_path),'etc','init.d','gfmd'),:stop
-      execute File.join(fetch(:gfmd_path),'etc','init.d','gfarm-pgsql'),:stop
     end
     print_process(:gfmd,"gfmd")
   end
@@ -159,13 +164,19 @@ end
 task :stop do
   invoke "stop:gfsd"
   invoke "stop:gfmd"
+  invoke "stop:postgres"
 end
 
 
 namespace :start do
-  task :gfmd do
+  task :postgres do
     on roles(:gfmd) do |host|
       execute File.join(fetch(:gfmd_path),'etc','init.d','gfarm-pgsql'),:start
+    end
+    print_process(:gfmd,"postgres")
+  end
+  task :gfmd do
+    on roles(:gfmd) do |host|
       execute File.join(fetch(:gfmd_path),'etc','init.d','gfmd'),:start
     end
     print_process(:gfmd,"gfmd")
@@ -179,6 +190,7 @@ namespace :start do
 end
 
 task :start do
+  invoke "start:postgres"
   invoke "start:gfmd"
   invoke "start:gfsd"
 end
