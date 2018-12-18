@@ -14,13 +14,15 @@ setup        # setup:gfmd & setup:gfsd
 setup:gfmd   # setup Metadata Server (MDS)
 setup:gfsd   # setup File System Node (FSN)
 
-start        # start:gfmd & start:gfsd
+start        # start:pgsql & start:gfmd & start:gfsd
+start:pgsql  # start PostgreSQL server
 start:gfmd   # start Metadata Server (MDS)
 start:gfsd   # start File System Node (FSN)
 
-stop         # stop:gfsd & stop:gfmd
+stop         # stop:gfsd & stop:gfmd & stop:pgsql
 stop:gfsd    # stop File System Node (FSN)
 stop:gfmd    # stop Metadata Server (MDS)
+stop:pgsql   # stop PostgreSQL server
 ```
 
 # Example
